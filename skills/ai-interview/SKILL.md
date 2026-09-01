@@ -10,14 +10,20 @@ argument-hint: "paste the interview prompt, and the total minutes if not 60"
 You are the **pit crew**. The user is the candidate, the clock is real, and working code beats
 a complete pipeline.
 
-Nine phases, **one stop**. Everything the user approves is collected into a single gate after
-phase 3; after it, run to the end without blocking them again.
+Nine phases, **one gate**. Once the kickoff budget is approved, everything else you need from
+the user is collected into a single stop after phase 3; after it, run to the end without
+blocking them again.
 
 Say this once at kickoff: `/fast` runs Opus with faster output without downgrading the model.
 
 ## Phase 0 — Kickoff (~2 min)
 
 Stamp the start with `date +%s` and keep the number; every boundary compares against it.
+
+Stamp the tree too. `git rev-parse HEAD` is the base that every later diff and every revert
+measures against. When the repo has no commits — or is not a repo at all — make one:
+`git init -q && git commit -q --allow-empty -m "interview base"`. Keep that SHA beside the
+timestamp.
 
 Read the prompt, then propose the phase list with a minute budget beside each, scaled to the
 total the user gave (60 when they gave none). Drop phases this task does not need.
@@ -67,32 +73,35 @@ Present in one message, together:
 3. The assertion manifest, and its gap list.
 4. The diagram.
 
-Ask for approval. This is the only time you stop the user; after they approve, run to the end.
+Ask for approval. This is the last time you stop the user; after they approve, run to the end.
 
 ## Phase 4 — Implementation design (~3 min)
 
 Break the must-set into work units, naming the files each one touches.
 
-**Parallelism bar.** Flag a split when two or more units touch provably disjoint file sets
-*and* each holds ~10 minutes or more of work. Below that bar, one implementor — a subagent
-starts cold, and on a small codebase two implementors contend on the same files. The flag is a
-question to the user; they decide.
+**Parallelism bar.** Split only when two or more units touch provably disjoint file sets *and*
+each holds ~10 minutes or more of work. Below that bar, one implementor — a subagent starts
+cold, and on a small codebase two implementors contend on the same files.
+
+Apply the bar yourself and state the call in one line. The gate has closed, and the user has no
+information here that you lack.
 
 ## Phase 5 — Execution (~18 min)
 
 Dispatch `interview-implementor`. Must-set first, then the stretch queue while time allows.
+Give each dispatch its work unit and the files it owns.
 
-Commit after each work unit lands: `git add -A && git commit -qm "wip: <unit>"`. These are
-checkpoints, not history — they exist so a later phase can fall back to a known-good tree.
-Pushing and submitting still stay with the user.
+Commit after each work unit lands — see *The checkpoint chain*.
 
-Code throwing → follow `~/.claude/skills/interview-debug/SKILL.md` before continuing.
+Code throwing → *Handing to interview-debug*, before continuing.
 
 ## Phase 6 — Review (~5 min)
 
-Dispatch `interview-reviewer` on the working diff. It returns findings already triaged into
-*fix now* and *README limitation*. Send the fix-now findings to the implementor; hold the
-others for the README.
+Dispatch `interview-reviewer` on `git diff <base>..HEAD`, the base stamped at phase 0. The
+working tree is clean by now; the checkpoint commits *are* the diff.
+
+It returns findings already triaged into *fix now* and *README limitation*. Send the fix-now
+findings to the implementor; hold the others for the README. Checkpoint once the fixes land.
 
 Review lands here, before the tests exist, so a structural finding costs a rewrite of code
 rather than a rewrite of code and tests.
@@ -102,7 +111,7 @@ rather than a rewrite of code and tests.
 Dispatch `interview-test-author` again. It writes tests to the manifest **as approved** and
 runs them. A test outside the approved manifest gets surfaced, not slipped in.
 
-Tests red → follow `~/.claude/skills/interview-debug/SKILL.md` before anything else.
+Tests red → *Handing to interview-debug*, before anything else.
 
 ## Phase 8 — Docs (~5 min)
 
@@ -119,6 +128,33 @@ The implementor documents each unit as it writes, so finish with a gap check for
 undocumented rather than a fresh pass over every file.
 
 Close with a summary of what to submit. Committing, pushing and submitting stay with the user.
+
+## The checkpoint chain
+
+Commit whenever something lands green — an implementation unit, a batch of review fixes, a
+passing test file:
+
+```bash
+git add -A && git commit -qm "wip: <what landed>"
+```
+
+These are checkpoints, not history. They exist so a later phase can fall back to a known-good
+tree, and the abandon protocol's revert is only ever as good as the most recent one. A chain
+that stops at phase 5 means a phase 7 revert throws away the phase 6 review fixes without
+anyone seeing it go.
+
+Pushing and submitting still stay with the user.
+
+## Handing to interview-debug
+
+Follow `~/.claude/skills/interview-debug/SKILL.md`, and hand it three things — without them its
+tripwire and its abandon protocol both run blind:
+
+- **The start stamp and the total budget.** Its tripwire tightens past two-thirds and cannot
+  find that boundary on its own.
+- **The MVP label of the unit that broke.** Its abandon protocol reads *must* and *should*
+  differently — one stops the user, the other does not.
+- **The latest checkpoint SHA.** That is what a revert falls back to.
 
 ## The clock
 

@@ -10,8 +10,11 @@ argument-hint: "the failing command, or the broken repo's prompt"
 Two other skills on this machine debug well and assume you eventually win. This one decides
 **what ships when the bug wins**.
 
-Stamp `date +%s` at entry. Carry the parent run's start stamp too — the tripwire reads the
-clock against it. Standalone, the stamp at entry *is* the start.
+Stamp `date +%s` at entry. A parent run hands you three things: its **start stamp** and total
+budget — the tripwire reads the clock against them; the **MVP label** of the unit that broke —
+the abandon protocol reads it per unit; and the **latest checkpoint SHA** — what a revert falls
+back to. Ask for any it did not send. Standalone, the stamp at entry *is* the start, there is
+no label, and there is nothing to revert to.
 
 ## Branch
 
