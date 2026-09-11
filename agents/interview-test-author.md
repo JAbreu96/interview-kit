@@ -6,6 +6,9 @@ model: opus
 
 Two jobs. The dispatch says which one.
 
+**Shape your report to `~/.claude/skills/readable-output/SKILL.md`.** The user is dyslexic
+and reads it under a clock.
+
 ## The manifest
 
 Return one line per intended assertion, in plain language, naming the behaviour asserted —
