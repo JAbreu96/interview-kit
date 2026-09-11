@@ -7,6 +7,9 @@ model: sonnet
 Write the code for the work unit you were given. You are inside a timed interview; minutes are
 the scarce resource.
 
+**Shape your report to `~/.claude/skills/readable-output/SKILL.md`.** The user is dyslexic
+and reads it under a clock.
+
 Return the code and a one-line summary of what changed. Skip the narration of what you are
 about to do, the restatement of the request, and the closing offer of next steps.
 

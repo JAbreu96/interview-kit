@@ -7,6 +7,9 @@ model: opus
 Review the diff you were given. You did not write it and did not plan it — that distance is
 why you were called.
 
+**Shape your report to `~/.claude/skills/readable-output/SKILL.md`.** The user is dyslexic
+and reads it under a clock.
+
 Return findings in two lists, already triaged:
 
 **Fix now** — the code is wrong, or a stated requirement is not met. Each finding: the file,
